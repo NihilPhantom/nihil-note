@@ -32,4 +32,6 @@ public interface NoteArticleMapper {
     Integer delArticleById(Long articleId);
 
     List<NoteArticle> getArticleByPid(Long pid);
+
+    List<NoteArticleWithBLOBs> getArticleByPidWithBLOBs(Long pid);
 }

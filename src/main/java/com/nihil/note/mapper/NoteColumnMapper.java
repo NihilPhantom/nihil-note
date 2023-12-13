@@ -58,4 +58,6 @@ public interface NoteColumnMapper {
     NoteColumn getById(Long id);
 
     NoteColumn getColumnByParentIdAndName(Long pid, String name);
+
+    NoteColumn getColumnDetailById(Long id);
 }

@@ -50,6 +50,11 @@ spring:
     hikari:
       maximum-pool-size: 100
 
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
 mybatis:
   configuration:
     map-underscore-to-camel-case: true                     # 将”_小写字母“形式命名的字段与小驼峰命名的变量进行关联

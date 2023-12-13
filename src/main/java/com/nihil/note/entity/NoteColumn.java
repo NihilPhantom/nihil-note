@@ -6,14 +6,13 @@ import java.util.Date;
 
 @Data
 public class NoteColumn {
-    private Long id;
-    private String pid;
-    private String authorId;
-    private String name;
-    private String des;
-    private Integer num;
-    private Boolean published;
-    private Date createTime;
-    private Date updateTime;
-    private Long parentId;
+    protected Long id;
+    protected String authorId;
+    protected String name;
+    protected String des;
+    protected Integer num;
+    protected Boolean published;
+    protected Date createTime;
+    protected Date updateTime;
+    protected Long parentId;
 }

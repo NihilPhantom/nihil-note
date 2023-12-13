@@ -1,15 +1,18 @@
 package com.nihil.note.service.serviceimpl;
 
+import com.nihil.common.exception.NihilException;
 import com.nihil.common.file.FileConst;
 import com.nihil.common.file.FileNodeDO;
 import com.nihil.common.file.FolderCreateParam;
 import com.nihil.common.file.FolderInfoVO;
 import com.nihil.note.entity.NoteArticle;
+import com.nihil.note.entity.NoteArticleWithBLOBs;
 import com.nihil.note.entity.NoteColumn;
 import com.nihil.note.mapper.NoteArticleMapper;
 import com.nihil.note.mapper.NoteColumnMapper;
 import com.nihil.note.pojo.ArticleExchangePARAM;
 import com.nihil.note.pojo.ColumnAllData;
+import com.nihil.note.pojo.ColumnChildrenData;
 import com.nihil.note.pojo.ColumnGetPARM;
 import com.nihil.note.service.NoteColumnService;
 import jakarta.annotation.Resource;
@@ -159,10 +162,39 @@ public class NoteColumnServiceImpl implements NoteColumnService {
         return columnMapper.getColumnByParentIdAndName(pid, name);
     }
 
-    @Override
-    public ColumnAllData out2json(Long columnId) {
-        return null;
-    }
+    /**
+     * 使用层次遍历法，当前专栏
+     * @param columnId
+     * @return
+     */
+//    @Override
+//    public ColumnAllData out2json(Long columnId) {
+//        List<NoteColumn> columnList = new ArrayList<>();
+//        List<NoteArticle> articles = new ArrayList<>();
+//        // 获取根节点的信息
+//        NoteColumn rootColumn = getColumnDetailById(columnId);
+//        if(rootColumn == null){
+//            throw new NihilException("请正确选择专栏");
+//        }
+//        columnList.add(rootColumn);
+//        int prePosition = 0; // 指针
+//        while (prePosition >= columnList.size()) {
+//            ColumnChildrenData childrenData = getChildrenByPid(columnList.get(prePosition++).getParentId());
+//            for (NoteColumn column : childrenData.getColumns()) {
+//                columnList.add(column);
+//            }
+//            for (NoteArticle article : childrenData.getArticles()) {
+//                articles.add(article);
+//            }
+//        }
+//        ColumnAllData res = new ColumnAllData();
+//        res.setRootId(rootColumn.getId());
+//        res.setRootName(rootColumn.getName());
+//        res.setDes(rootColumn.getDes());
+//        res.setColumns(columnList);
+//        res.setArticles(articles);
+//        return res;
+//    }
 
     @Override
     public List<FileNodeDO> getArticleList(Long pid, String authorId) {
@@ -204,5 +236,20 @@ public class NoteColumnServiceImpl implements NoteColumnService {
             res = columnMapper.decreaseNumByArticleId(articleId);
         }
         return res.equals(1);
+    }
+
+    @Override
+    public NoteColumn getColumnDetailById(Long id){
+        return columnMapper.getColumnDetailById(id);
+    }
+
+    @Override
+    public ColumnChildrenData getChildrenByPid(Long pid) {
+        List<NoteColumn> columnList = columnMapper.getColumnListByPid(pid);
+        List<NoteArticleWithBLOBs> articleList = noteArticleMapper.getArticleByPidWithBLOBs(pid);
+        ColumnChildrenData res = new ColumnChildrenData();
+        res.setColumns(columnList);
+        res.setArticles(articleList);
+        return res;
     }
 }

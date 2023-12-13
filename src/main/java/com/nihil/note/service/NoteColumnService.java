@@ -6,6 +6,7 @@ import com.nihil.common.file.FolderInfoVO;
 import com.nihil.note.entity.NoteColumn;
 import com.nihil.note.pojo.ArticleExchangePARAM;
 import com.nihil.note.pojo.ColumnAllData;
+import com.nihil.note.pojo.ColumnChildrenData;
 import com.nihil.note.pojo.ColumnGetPARM;
 
 import java.util.List;
@@ -25,5 +26,7 @@ public interface NoteColumnService {
 
     NoteColumn getColumnByParentIdAndName(long newId, String oldNodeName);
 
-    ColumnAllData out2json(Long columnId);
+    NoteColumn getColumnDetailById(Long id);
+
+    ColumnChildrenData getChildrenByPid(Long pid);
 }

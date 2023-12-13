@@ -5,9 +5,6 @@ import com.nihil.note.entity.NoteArticleWithBLOBs;
 import com.nihil.note.pojo.ArticleVO;
 import com.nihil.note.service.serviceimpl.NoteArticleServiceImpl;
 import jakarta.annotation.Resource;
-import org.apache.ibatis.annotations.Delete;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
 import org.springframework.web.bind.annotation.*;
 
 

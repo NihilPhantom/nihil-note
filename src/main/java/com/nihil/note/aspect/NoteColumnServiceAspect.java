@@ -2,15 +2,19 @@ package com.nihil.note.aspect;
 
 
 import com.alibaba.fastjson2.JSON;
+import com.nihil.common.file.FileConst;
 import com.nihil.common.file.FileNodeDO;
 import com.nihil.common.file.FolderCreateParam;
 import com.nihil.common.file.FolderInfoVO;
 import com.nihil.common.response.Result;
 import com.nihil.note.client.FileNodeClient;
+import com.nihil.note.entity.NoteArticle;
+import com.nihil.note.entity.NoteArticleWithBLOBs;
 import com.nihil.note.entity.NoteColumn;
 import com.nihil.note.entity.NoteColumnFile;
 import com.nihil.note.mapper.NoteColumnMapper;
 import com.nihil.note.mapper.NoteFileMapper;
+import com.nihil.note.pojo.ColumnChildrenData;
 import com.nihil.note.pojo.ColumnGetPARM;
 import feign.FeignException;
 import jakarta.annotation.Resource;
@@ -22,8 +26,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Aspect
 @Component
@@ -167,4 +170,72 @@ public class NoteColumnServiceAspect {
         return res;
     }
 
+    /**
+     * 将获取专栏的参数，从 FileID 转化回 ColumnID，使用原始方法进行查询，最总将 FileID
+     * @param joinPoint
+     * @return
+     * @throws Throwable
+     */
+    @Around("execution(* com.nihil.note.service.NoteColumnService.getColumnDetailById(..))")
+    public Object aroundGetColumnDetailById(ProceedingJoinPoint joinPoint) throws Throwable {
+        Object[] args = joinPoint.getArgs();
+        Long fileId = (Long) args[0];
+        Long columnId = noteFileMapper.getColumnIdByFileId(fileId);
+        args[0] = columnId;
+        NoteColumn res = (NoteColumn) joinPoint.proceed(args);
+        res.setId(fileId);
+        return res;
+    }
+
+    @Around("execution(* com.nihil.note.service.NoteColumnService.getChildrenByPid(..))")
+    public Object aroundGetChildrenByPid(ProceedingJoinPoint joinPoint) throws Throwable {
+        // 获取原方法的参数
+        Object[] args = joinPoint.getArgs();
+        Long fileId = (Long) args[0];
+
+        // 从文件系统中获取所有的文章信息
+        List<FileNodeDO> fileNodeList = fileNodeClient.getChildNodesByParentId(fileId).getData();
+
+        Long columnId = noteFileMapper.getColumnIdByFileId(fileId);
+        args[0] = columnId;
+        ColumnChildrenData originalRes = (ColumnChildrenData) joinPoint.proceed(args);
+
+        // 根据名字制作一份映射，用于排序是进行查询
+        Map<String, NoteArticleWithBLOBs> name2Article = new HashMap<>();
+        Map<String, NoteColumn> name2Column = new HashMap<>();
+
+        if(originalRes.getColumns() !=null){
+            name2Column = new HashMap<>(originalRes.getColumns().size());
+            for(NoteColumn column : originalRes.getColumns()){
+                column.setParentId(fileId);
+                name2Column.put(column.getName(), column);
+            }
+        }
+        if(originalRes.getArticles() != null){
+            name2Article = new HashMap<>(originalRes.getArticles().size());
+            for(NoteArticleWithBLOBs article : originalRes.getArticles()){
+                name2Article.put(article.getTitle(), article);
+            }
+        }
+
+        // 遍历文件系统查询到的所有节点(他们已经是排好顺序的)，只需要按照节点的名字重新排序就能得到排序好的专栏和文件列表了
+        List<NoteColumn> columnList  = new ArrayList<>();
+        List<NoteArticleWithBLOBs> articleList = new ArrayList<>();
+
+        for( FileNodeDO fileNode: fileNodeList){
+            if(fileNode.getType().equals(FileConst.TYPE_FOLDER)){
+                NoteColumn column = name2Column.get(fileNode.getName());
+                column.setId(fileNode.getId());   // 这里将
+                columnList.add(column);
+            }
+            else if (fileNode.getType().equals(FileConst.TYPE_Markdown)) {
+                NoteArticleWithBLOBs article = name2Article.get(fileNode.getName());
+                article.setId(fileNode.getId());
+                articleList.add(article);
+            }
+        }
+        originalRes.setColumns(columnList);
+        originalRes.setArticles(articleList);
+        return originalRes;
+    }
 }

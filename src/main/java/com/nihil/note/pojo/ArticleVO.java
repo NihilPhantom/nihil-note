@@ -1,5 +1,6 @@
 package com.nihil.note.pojo;
 
+import com.nihil.note.entity.NoteArticleWithBLOBs;
 import com.nihil.note.entity.NoteLabel;
 import lombok.Data;
 
@@ -17,4 +18,18 @@ public class ArticleVO {
     private String markdown;            // markdown 内容
     private String content;             // html     内容
     private boolean published;          // 是否公开
+
+    public ArticleVO(){}
+
+    public ArticleVO(NoteArticleWithBLOBs noteArticleWithBLOBs){
+        this.id = noteArticleWithBLOBs.getId();
+        this.authorId = noteArticleWithBLOBs.getAuthorId();
+        this.title = noteArticleWithBLOBs.getTitle();
+        this.des = noteArticleWithBLOBs.getDes();
+        this.imgHref = noteArticleWithBLOBs.getImgHref();
+        this.columnId = noteArticleWithBLOBs.getParentId();
+        this.markdown = noteArticleWithBLOBs.getMarkdown();
+        this.content = noteArticleWithBLOBs.getContent();
+        this.published = noteArticleWithBLOBs.getPublished();
+    }
 }

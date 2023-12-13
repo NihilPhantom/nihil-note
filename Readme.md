@@ -35,3 +35,59 @@ public static final String TYPE_Markdown = "markdown";
 3、专栏Id
 
 当使用了外置的文档系统时，为了避免额外的查询，专栏Id 和 文件Id 都会进行转化为 文档系统的ID
+
+## 接口说明
+### 导出接口
+
+```json
+{
+  "msg": "成功",
+  "code": 200,
+  "data": {
+    "rootId": 406,
+    "rootName": ".nihil_note",
+    "des": null,
+    "columnWithArticles": [
+      {
+        "id": 406,
+        "authorId": "1",
+        "name": ".nihil_note",
+        "des": null,
+        "num": 2,
+        "published": null,
+        "createTime": null,
+        "updateTime": "2023-12-12T19:10:50.000+00:00",
+        "parentId": 0,
+        "articleList": [
+          {
+            "id": 876,
+            "authorId": "1",
+            "title": "java 组件版本对应",
+            "des": "",
+            "imgHref": "",
+            "createTime": "2023-12-12T16:09:58.000+00:00",
+            "readNum": null,
+            "commentNum": null,
+            "starNum": null,
+            "coinNum": null,
+            "published": false,
+            "parentId": 406,
+            "markdown": "",
+            "content": ""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+【说明】
+
+rootId： 根目录的id
+
+rootName： 根目录的名字
+
+des： 根目录的描述
+
+columnWithArticles 所有子专栏的列表(包含articleList)，使用深度遍历或者广度遍历生产，要求父级节点永远在子节点之上。
+

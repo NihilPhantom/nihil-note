@@ -131,4 +131,8 @@
         SELECT * FROM note_column WHERE parent_id = #{pid} AND name=#{name}
     </select>
 
+    <select id="getColumnDetailById" resultType="com.nihil.note.entity.NoteColumn">
+        SELECT * FROM note_column WHERE id = #{id}
+    </select>
+
 </mapper>

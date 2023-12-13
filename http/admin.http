@@ -1,5 +1,19 @@
 ### 从 V1 的 file_node 中恢复数据
 GET http://127.0.0.1:8002/nihil-note/loadFromDB
 
-###
+### 从 V1 版的 MeiLiSearch 导出的 json 中恢复 MarkDown 的数据
 GET http://127.0.0.1:8002/nihil-note/loadMeiliJson
+
+### 备份数据到json
+GET http://127.0.0.1:8002/nihil-note/column/out2json?columnId=406
+
+### 从 json 中恢复数据
+POST http://127.0.0.1:8002/nihil-note/column/loadFromJson?columnId=406
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="json"; filename="data.json"
+Content-Type: text/plain
+
+< D:\project\nihil-java-app\.idea\httpRequests\2023-12-14T000804.200.json
+--boundary--

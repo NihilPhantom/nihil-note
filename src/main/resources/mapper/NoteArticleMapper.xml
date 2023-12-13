@@ -56,6 +56,11 @@
         SELECT * FROM note_article WHERE parent_id = #{pid}
     </select>
 
+    <select id="getArticleByPidWithBLOBs" resultType="com.nihil.note.entity.NoteArticleWithBLOBs">
+        SELECT * FROM note_article WHERE parent_id = #{pid}
+    </select>
+
+
     <select id="getArticleByColumnIdAndName" resultType="com.nihil.note.entity.NoteArticle">
         SELECT * FROM note_article WHERE parent_id = #{pid} AND title=#{title}
     </select>
