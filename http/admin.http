@@ -1,0 +1,5 @@
+### 从 V1 的 file_node 中恢复数据
+GET http://127.0.0.1:8002/nihil-note/loadFromDB
+
+###
+GET http://127.0.0.1:8002/nihil-note/loadMeiliJson

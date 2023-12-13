@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nihil.note.mapper.NoteColumnMapper">
+
+    <update id="changeArticleNum">
+        UPDATE `note_column` SET `num` = `num` + #{num} WHERE `id` = #{columnId}
+    </update>
+
+    <update id="updateLastNext">
+        <selectKey keyProperty="preArticleId" order="BEFORE" resultType="String">
+            SELECT `article_id` FROM `note_article_column`
+                                WHERE `column_id` = #{columnId} AND `aft_article_id` = 'final'
+        </selectKey>
+        UPDATE `note_article_column` SET `aft_article_id` = #{articleId}
+                                     WHERE `column_id` = #{columnId} AND `aft_article_id` = 'final'
+    </update>
+
+    <update id="updateAfterAricleId">
+        UPDATE `note_article_column`
+        SET `aft_article_id` = #{aftArticleId}
+        WHERE `article_id` = #{articleId} AND `column_id` = #{columnId}
+    </update>
+
+    <update id="updateBeforeArticleId">
+        UPDATE `note_article_column`
+        SET `pre_article_id` = #{preArticleId}
+        WHERE `article_id` = #{articleId} AND `column_id` = #{columnId}
+    </update>
+
+    <update id="updatePreAftArticleId">
+        UPDATE `note_article_column`
+        SET `pre_article_id` = #{preArticleId}, `aft_article_id` = #{aftArticleId}
+        WHERE `article_id` = #{articleId} AND `column_id` = #{columnId}
+    </update>
+
+    <update id="decreaseNumByArticleId">
+        UPDATE note_column SET num=num-1 WHERE id = (SELECT parent_id FROM note_article WHERE id = #{articleId});
+    </update>
+
+    <update id="decreaseNumByColumnId">
+        UPDATE note_column SET num=num-1 WHERE id = (SELECT parent_id FROM note_column WHERE id = #{columnId});
+    </update>
+
+    <update id="increaseNum">
+        UPDATE note_column SET num=num+1 WHERE id = #{id};
+    </update>
+    <update id="decreaseNum">
+        UPDATE note_column SET num=num-1 WHERE id = #{id};
+    </update>
+
+
+    <delete id="deleteNoteArticleColumn">
+        DELETE FROM `note_article_column` WHERE `article_id` = #{articleId} AND `column_id` = #{columnId}
+    </delete>
+
+    <delete id="deleteNoteColumn">
+        DELETE FROM `note_column` WHERE `id` = #{id} AND `num` = 0;
+    </delete>
+
+    <select id="getDefaultColumnByAuthorId">
+        SELECT * FROM note_column WHERE `author_id` = #{authorId} ORDER BY `create_time`;
+    </select>
+
+    <insert id="addColumn" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `note_column`
+            (`author_id` ,`parent_id` , `name`, `first_article_id`, `des`, `published`)
+        VALUES (#{authorId}, #{parentId}, #{name}, null, #{des}, #{published})
+    </insert>
+
+    <insert id="addArticleToColumn">
+        INSERT INTO `note_article_column`
+            (`article_id`, `column_id`, `pre_article_id`, `aft_article_id`)
+        VALUES (#{articleId}, #{columnId}, #{preArticleId}, #{aftArticleId})
+    </insert>
+
+    <select id="getColumn" resultType="com.nihil.note.entity.NoteColumn">
+        SELECT * FROM `note_column`
+        <where>
+            <if test="authorId != null and authorId != ''">
+                AND `author_id` = #{authorId}
+            </if>
+                AND published = #{published}
+        </where>
+        ORDER BY `update_time` DESC
+    </select>
+
+    <select id="getLastArticle" resultType="java.lang.String"></select>
+
+    <select id="getArticleList" resultType="com.nihil.note.entity.NoteArticle">
+        SELECT `note_article`.* FROM
+            (SELECT @code as id,
+                    ( SELECT @code := `aft_article_id`
+                      FROM `note_article_column`
+                      WHERE `article_id` = @code AND `column_id` = #{id} LIMIT 1
+                    ) as T1
+             FROM `note_article_column`, (SELECT @code := (SELECT article_id  FROM `note_article_column` WHERE `column_id` = #{id} AND `pre_article_id` = 'start')) T4 ) TT1 INNER JOIN	`note_article`  ON TT1.id = `note_article`.`id`
+        <where>
+            <if test="!isAuthor">
+                AND published = b'1'
+            </if>
+        </where>
+    </select>
+
+    <select id="getOneArticleInColumnNum" resultType="java.lang.Integer">
+        SELECT count(*) FROM `note_article_column` WHERE `article_id` = #{articleId}
+    </select>
+
+    <select id="getNoteArticleColumn" resultType="com.nihil.note.entity.NoteArticleColumn">
+        SELECT * FROM `note_article_column` WHERE `article_id` = #{articleId} AND `column_id` = #{columnId}
+    </select>
+
+    <select id="getPreAftArticleId" resultType="com.nihil.note.pojo.ArticleExchangePARAM">
+        SELECT `pre_article_id` articleId1, `aft_article_id` articleId2 FROM `note_article_column`
+        WHERE `article_id` = #{articleId} AND `column_id` = #{columnId}
+    </select>
+
+    <select id="getColumnByAuthorIdAndColumnName" resultType="java.lang.Long">
+        SELECT id FROM note_column WHERE author_id = #{authorId} AND name = #{noteRootName}
+    </select>
+    <select id="getColumnListByPid" resultType="com.nihil.note.entity.NoteColumn">
+        SELECT * FROM note_column WHERE parent_id = #{pid}
+    </select>
+    <select id="getParentId" resultType="java.lang.Long">
+        SELECT parent_id FROM note_column WHERE id = #{id};
+    </select>
+    <select id="getById" resultType="com.nihil.note.entity.NoteColumn">
+        SELECT * FROM note_column WHERE id = #{id};
+    </select>
+
+    <select id="getColumnByParentIdAndName" resultType="com.nihil.note.entity.NoteColumn">
+        SELECT * FROM note_column WHERE parent_id = #{pid} AND name=#{name}
+    </select>
+
+</mapper>

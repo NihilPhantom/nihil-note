@@ -1,0 +1,66 @@
+server:
+  port: 8002
+  servlet:
+    context-path: /${spring.application.name}
+    session:
+      timeout: 18000
+
+inner-host: 127.0.0.1
+out-host: 127.0.0.1
+auth-server:
+  name: nihil-auth
+
+nihil-auth:
+  clientId: 1
+  clientSecret: 123456
+  serverHost: 127.0.0.1
+
+spring:
+  application:
+    name: nihil-note
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${inner-host}:8848
+        namespace: c92fc31d-1d77-4bc8-a8e3-fde1502394ec
+
+  security:
+    oauth2:
+      client:
+        registration:
+          default-client:
+            provider: default-provider
+            client-id: "default-client"
+            client-authentication-method: client_secret_basic
+            client-secret: "default-secret"
+            authorization-grant-type: "authorization_code"
+            scope: openid
+            redirect-uri: https://${out-host}/${spring.application.name}/login/oauth2/code/default-client
+        provider:
+          default-provider:
+            authorization-uri: https://${out-host}/${auth-server.name}/oauth2/authorize
+            token-uri: http://${inner-host}:8010/${auth-server.name}/oauth2/token
+            jwk-set-uri: http://${inner-host}:8010/${auth-server.name}/oauth2/jwks
+
+
+  datasource: # 配置数据库
+    url: jdbc:mysql://localhost:3306/nihil_note?serverTimezone=UTC&useAffectedRows=true
+    username: user
+    password: user123456
+    hikari:
+      maximum-pool-size: 100
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true                     # 将”_小写字母“形式命名的字段与小驼峰命名的变量进行关联
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 配置sql运行时的输出
+  typeAliasesPackage: com.nihilwater.permission.entity
+  mapperLocations: mapper/*.xml
+
+meili:
+  index: markdown
+  primary-key: _id
+
+note:
+  root-name: .nihil_note
+  file-node-enable: true

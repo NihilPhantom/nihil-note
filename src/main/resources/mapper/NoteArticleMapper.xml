@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nihil.note.mapper.NoteArticleMapper">
+
+    <insert id="addArticle" parameterType="com.nihil.note.pojo.ArticleVO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `note_article`(
+                                   `id`, `markdown`, `content`,
+                                   `author_id`, `title`, `des`, parent_id,
+                                   `img_href`, `create_time`, `published`)
+        VALUES (#{id}, #{markdown}, #{content},
+                #{authorId}, #{title}, #{des}, #{columnId},
+                #{imgHref}, NOW(), #{published})
+    </insert>
+
+    <update id="updateArticle" >
+        UPDATE `note_article`
+        <set>
+            <if test="markdown != null">`markdown`=#{markdown},</if>
+            <if test="content != null">`content`=#{content},</if>
+            <if test="title != null">`title`=#{title},</if>
+            <if test="des != null">`des`=#{des},</if>
+            <if test="imgHref != null">`img_href`=#{imgHref},</if>
+        </set>
+        WHERE id=#{id}
+    </update>
+
+    <delete id="delArticleById">
+        DELETE FROM `note_article` WHERE `id` = #{id}
+    </delete>
+
+    <select id="getArticle" resultType="com.nihil.note.entity.NoteArticle">
+        SELECT `id`, `author_id`, `title`, `des`, `img_href`, `create_time`, `read_num` FROM `note_article`
+        <where>
+            <if test="null != columnId and columnId != 0">
+                AND `id` IN (SELECT `author_id` FROM `note_article_column` WHERE `column_id` = #{columnId})
+            </if>
+            <if test="null != authorId and authorId != ''">
+                AND `author_id` = #{authorId}
+            </if>
+            <if test="labelId != null and labelId !=0">
+                AND `id` in (SELECT `author_id` FROM `note_article_label` WHERE `label_id` = #{labelId})
+            </if>
+                AND published = #{published}
+        </where>
+    </select>
+
+    <select id="getArticleById" resultType="com.nihil.note.entity.NoteArticleWithBLOBs">
+        SELECT * FROM `note_article` WHERE `id` = #{id}
+    </select>
+
+    <select id="getArticleLabelByArticleId" resultType="com.nihil.note.entity.NoteArticleLabel">
+        SELECT * FROM `note_article_label` WHERE `article_id` = #{articleId}
+    </select>
+
+    <select id="getArticleByPid" resultType="com.nihil.note.entity.NoteArticle">
+        SELECT * FROM note_article WHERE parent_id = #{pid}
+    </select>
+
+    <select id="getArticleByColumnIdAndName" resultType="com.nihil.note.entity.NoteArticle">
+        SELECT * FROM note_article WHERE parent_id = #{pid} AND title=#{title}
+    </select>
+
+    <insert id="addArticleLabel" >
+        INSERT
+    </insert>
+
+    <insert id="saveNews">
+        insert ignore into tb_news
+        values
+        <foreach collection=""  item="key" open="(" close=")" separator=",">
+            #{params[${key}]}
+        </foreach>
+    </insert>
+
+    <!-- 拷贝创建一条文章的记录 -->
+    <insert id="copyCreateArticle">
+        INSERT INTO `note_article` (`id`, `markdown`, `content`, `author_id`, `title`, `des`, `img_href`, `published`)
+        SELECT #{newArticleId}, `markdown`, `content`, `author_id`, `title`, `des`, `img_href`, `published`
+        FROM `note_article`
+        WHERE `id` = #{fromArticleId};
+    </insert>
+
+
+</mapper>
